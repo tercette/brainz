@@ -1,0 +1,6 @@
+@Brainz.Api_HostAddress = http://localhost:5109
+
+GET {{Brainz.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
