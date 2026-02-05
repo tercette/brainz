@@ -26,7 +26,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
         disabled={page >= totalPages}
         className="px-3 py-1 text-sm rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
       >
-        Pr\u00f3ximo
+        Próximo
       </button>
     </div>
   );

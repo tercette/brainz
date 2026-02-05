@@ -49,14 +49,14 @@ export default function SyncStatusPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Sincroniza\u00e7\u00e3o</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Sincronização</h1>
         <div className="flex gap-2">
           <button
             onClick={() => handleTrigger('Users')}
             disabled={triggering}
             className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
-            Sync Usu\u00e1rios
+            Sync Usuários
           </button>
           <button
             onClick={() => handleTrigger('Events')}
@@ -78,7 +78,7 @@ export default function SyncStatusPage() {
       {loading ? (
         <Spinner />
       ) : logs.length === 0 ? (
-        <p className="text-gray-500 text-sm">Nenhum log de sincroniza\u00e7\u00e3o encontrado.</p>
+        <p className="text-gray-500 text-sm">Nenhum log de sincronização encontrado.</p>
       ) : (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
           <table className="min-w-full divide-y divide-gray-200">
@@ -86,7 +86,7 @@ export default function SyncStatusPage() {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">In\u00edcio</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Início</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Fim</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registros</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Erros</th>

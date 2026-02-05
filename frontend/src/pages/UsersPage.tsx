@@ -28,7 +28,7 @@ export default function UsersPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Usu\u00e1rios</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Usuários</h1>
         <SearchInput
           value={search}
           onChange={handleSearchChange}
@@ -42,7 +42,7 @@ export default function UsersPage() {
       {data && !loading && (
         <>
           <p className="text-sm text-gray-500 mb-3">
-            {data.totalCount} usu\u00e1rio(s) encontrado(s)
+            {data.totalCount} usuário(s) encontrado(s)
           </p>
           <UserTable users={data.items} onUserClick={handleUserClick} />
           <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />

@@ -8,7 +8,7 @@ interface UserTableProps {
 export default function UserTable({ users, onUserClick }: UserTableProps) {
   if (users.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-8">Nenhum usu\u00e1rio encontrado.</p>
+      <p className="text-center text-gray-500 py-8">Nenhum usuário encontrado.</p>
     );
   }
 

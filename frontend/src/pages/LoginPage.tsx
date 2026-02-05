@@ -19,7 +19,7 @@ export default function LoginPage() {
       await login({ username, password });
       navigate('/users');
     } catch {
-      setError('Credenciais inv\u00e1lidas');
+      setError('Credenciais inválidas');
     } finally {
       setLoading(false);
     }
@@ -30,17 +30,19 @@ export default function LoginPage() {
       <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-indigo-700">Brainz</h1>
-          <p className="text-sm text-gray-500 mt-1">Gest\u00e3o de Usu\u00e1rios e Eventos</p>
+          <p className="text-sm text-gray-500 mt-1">Gestão de Usuários e Eventos</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Usu\u00e1rio
+              Usuário
             </label>
             <input
               id="username"
+              name="username"
               type="text"
+              autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -54,7 +56,9 @@ export default function LoginPage() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

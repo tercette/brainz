@@ -15,7 +15,7 @@ export function useUsers(page: number, pageSize: number, search: string) {
       const response = await usersApi.getUsers(page, pageSize, search || undefined);
       setData(response.data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Falha ao buscar usu\u00e1rios';
+      const message = err instanceof Error ? err.message : 'Falha ao buscar usuários';
       setError(message);
     } finally {
       setLoading(false);

@@ -28,7 +28,7 @@ export default function UserEventsPage() {
         onClick={() => navigate('/users')}
         className="text-sm text-indigo-600 hover:text-indigo-800 mb-4 inline-block"
       >
-        &larr; Voltar para usu\u00e1rios
+        &larr; Voltar para usuários
       </button>
 
       {user && (
