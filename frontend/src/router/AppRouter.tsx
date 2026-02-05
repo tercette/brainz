@@ -6,6 +6,7 @@ import LoginPage from '../pages/LoginPage';
 import UsersPage from '../pages/UsersPage';
 import UserEventsPage from '../pages/UserEventsPage';
 import SyncStatusPage from '../pages/SyncStatusPage';
+import DashboardPage from '../pages/DashboardPage';
 
 export default function AppRouter() {
   return (
@@ -15,7 +16,8 @@ export default function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Navigate to="/users" replace />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/users/:userId/events" element={<UserEventsPage />} />
               <Route path="/sync" element={<SyncStatusPage />} />
