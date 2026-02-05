@@ -27,13 +27,21 @@ export default function DashboardPage() {
         ]);
 
         const logs = logsRes.data;
-        const completedLogs = logs.filter((l: SyncLog) => l.status === 'Completed' || l.status === 'CompletedWithErrors');
+
+        const findLastSync = (type: string) => {
+          const completed = logs.find((l: SyncLog) => l.syncType === type && (l.status === 'Completed' || l.status === 'CompletedWithErrors'));
+          if (completed) return completed;
+          return logs.find((l: SyncLog) => l.syncType === type && l.status === 'Running') || null;
+        };
+
+        const lastSync = logs.find((l: SyncLog) => l.status === 'Completed' || l.status === 'CompletedWithErrors')
+          || logs[0] || null;
 
         setStats({
           totalUsers: usersRes.data.totalCount,
-          lastSync: completedLogs[0] || null,
-          lastUserSync: completedLogs.find((l: SyncLog) => l.syncType === 'Users') || null,
-          lastEventSync: completedLogs.find((l: SyncLog) => l.syncType === 'Events') || null,
+          lastSync,
+          lastUserSync: findLastSync('Users'),
+          lastEventSync: findLastSync('Events'),
         });
       } catch {
         // silently fail
@@ -62,36 +70,54 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-500 mb-1">Último Sync de Usuários</p>
+          <p className="text-sm text-gray-500 mb-1">Sync de Usuários</p>
           {stats?.lastUserSync ? (
-            <>
-              <p className="text-lg font-semibold text-gray-800">
-                {stats.lastUserSync.recordsProcessed.toLocaleString('pt-BR')} registros
-              </p>
-              <p className="text-xs text-gray-400">
-                {stats.lastUserSync.completedAt
-                  ? `${formatDateTime(stats.lastUserSync.completedAt)} (${timeAgo(stats.lastUserSync.completedAt)})`
-                  : '—'}
-              </p>
-            </>
+            stats.lastUserSync.status === 'Running' ? (
+              <>
+                <p className="text-lg font-semibold text-blue-600">Em andamento...</p>
+                <p className="text-xs text-gray-400">
+                  Iniciado em {formatDateTime(stats.lastUserSync.startedAt)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-gray-800">
+                  {stats.lastUserSync.recordsProcessed.toLocaleString('pt-BR')} registros
+                </p>
+                <p className="text-xs text-gray-400">
+                  {stats.lastUserSync.completedAt
+                    ? `${formatDateTime(stats.lastUserSync.completedAt)} (${timeAgo(stats.lastUserSync.completedAt)})`
+                    : '—'}
+                </p>
+              </>
+            )
           ) : (
             <p className="text-lg text-gray-400">Nenhum sync realizado</p>
           )}
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-500 mb-1">Último Sync de Eventos</p>
+          <p className="text-sm text-gray-500 mb-1">Sync de Eventos</p>
           {stats?.lastEventSync ? (
-            <>
-              <p className="text-lg font-semibold text-gray-800">
-                {stats.lastEventSync.recordsProcessed.toLocaleString('pt-BR')} registros
-              </p>
-              <p className="text-xs text-gray-400">
-                {stats.lastEventSync.completedAt
-                  ? `${formatDateTime(stats.lastEventSync.completedAt)} (${timeAgo(stats.lastEventSync.completedAt)})`
-                  : '—'}
-              </p>
-            </>
+            stats.lastEventSync.status === 'Running' ? (
+              <>
+                <p className="text-lg font-semibold text-blue-600">Em andamento...</p>
+                <p className="text-xs text-gray-400">
+                  Iniciado em {formatDateTime(stats.lastEventSync.startedAt)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-gray-800">
+                  {stats.lastEventSync.recordsProcessed.toLocaleString('pt-BR')} registros
+                </p>
+                <p className="text-xs text-gray-400">
+                  {stats.lastEventSync.completedAt
+                    ? `${formatDateTime(stats.lastEventSync.completedAt)} (${timeAgo(stats.lastEventSync.completedAt)})`
+                    : '—'}
+                </p>
+              </>
+            )
           ) : (
             <p className="text-lg text-gray-400">Nenhum sync realizado</p>
           )}
