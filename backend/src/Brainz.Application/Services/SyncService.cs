@@ -117,13 +117,21 @@ public class SyncService : ISyncService
 
         try
         {
-            var users = await _unitOfWork.Users.GetAllAsync();
+            var allUsers = await _unitOfWork.Users.GetAllAsync();
+            var users = allUsers
+                .Where(u => !string.IsNullOrEmpty(u.Email))
+                .ToList();
+
+            _logger.LogInformation("Syncing events for {Count} users with email", users.Count);
+
             var from = DateTime.UtcNow.AddDays(-7);
             var to = DateTime.UtcNow.AddDays(30);
             int processed = 0, failed = 0;
+            const int batchSize = 50;
 
-            foreach (var user in users)
+            for (int i = 0; i < users.Count; i++)
             {
+                var user = users[i];
                 try
                 {
                     var graphEvents = await _graphService
@@ -159,6 +167,16 @@ public class SyncService : ISyncService
                 {
                     _logger.LogWarning(ex, "Failed to sync events for user {UserId}", user.Id);
                     failed++;
+                }
+
+                if ((i + 1) % batchSize == 0)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    syncLog.RecordsProcessed = processed;
+                    syncLog.RecordsFailed = failed;
+                    _unitOfWork.SyncLogs.Update(syncLog);
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("Event sync progress: {Current}/{Total} users", i + 1, users.Count);
                 }
             }
 
