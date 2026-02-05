@@ -48,10 +48,10 @@ docker-compose up -d
 ### 2. Rodar o backend
 ```bash
 cd backend
-dotnet ef database update --project src/Brainz.Infrastructure --startup-project src/Brainz.Api
 dotnet run --project src/Brainz.Api
 ```
-O backend estara disponivel em `https://localhost:5001` com Swagger em `https://localhost:5001/swagger`.
+As migrations sao aplicadas automaticamente ao iniciar em modo Development.
+O backend estara disponivel em `http://localhost:5109` com Swagger em `http://localhost:5109/swagger`.
 
 ### 3. Rodar o frontend
 ```bash
