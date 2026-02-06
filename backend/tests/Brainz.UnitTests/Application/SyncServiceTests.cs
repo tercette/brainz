@@ -25,6 +25,8 @@ public class SyncServiceTests
 
         _unitOfWorkMock.Setup(u => u.SyncLogs.AddAsync(It.IsAny<SyncLog>()))
             .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.SyncLogs.IsRunningAsync(It.IsAny<SyncType>()))
+            .ReturnsAsync(false);
         _unitOfWorkMock.Setup(u => u.SaveChangesAsync(default)).ReturnsAsync(1);
 
         _sut = new SyncService(
@@ -112,8 +114,8 @@ public class SyncServiceTests
     {
         var users = new List<User>
         {
-            new() { Id = Guid.NewGuid(), MicrosoftId = "ms-1" },
-            new() { Id = Guid.NewGuid(), MicrosoftId = "ms-2" }
+            new() { Id = Guid.NewGuid(), MicrosoftId = "ms-1", Email = "user1@edu.org" },
+            new() { Id = Guid.NewGuid(), MicrosoftId = "ms-2", Email = "user2@edu.org" }
         };
 
         _unitOfWorkMock.Setup(u => u.Users.GetAllAsync()).ReturnsAsync(users);

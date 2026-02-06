@@ -1,6 +1,7 @@
 using System.Text;
 using Brainz.Api.Middleware;
 using Brainz.Application;
+using Brainz.Domain.Interfaces;
 using Brainz.Infrastructure;
 using Brainz.Infrastructure.Data;
 using Brainz.Infrastructure.Jobs;
@@ -110,6 +111,10 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<BrainzDbContext>();
     await db.Database.MigrateAsync();
+
+    var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+    await unitOfWork.SyncLogs.MarkStaleAsFailedAsync();
+    await unitOfWork.SaveChangesAsync();
 }
 
 app.Run();
