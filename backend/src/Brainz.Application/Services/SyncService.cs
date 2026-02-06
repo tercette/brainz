@@ -25,6 +25,12 @@ public class SyncService : ISyncService
 
     public async Task SyncUsersAsync()
     {
+        if (await _unitOfWork.SyncLogs.IsRunningAsync(SyncType.Users))
+        {
+            _logger.LogInformation("User sync skipped - already running");
+            return;
+        }
+
         var syncLog = new SyncLog
         {
             Id = Guid.NewGuid(),
@@ -105,6 +111,12 @@ public class SyncService : ISyncService
 
     public async Task SyncEventsAsync()
     {
+        if (await _unitOfWork.SyncLogs.IsRunningAsync(SyncType.Events))
+        {
+            _logger.LogInformation("Event sync skipped - already running");
+            return;
+        }
+
         var syncLog = new SyncLog
         {
             Id = Guid.NewGuid(),
@@ -120,9 +132,11 @@ public class SyncService : ISyncService
             var allUsers = await _unitOfWork.Users.GetAllAsync();
             var users = allUsers
                 .Where(u => !string.IsNullOrEmpty(u.Email))
+                .OrderByDescending(u => u.LastSyncedAt)
+                .Take(500)
                 .ToList();
 
-            _logger.LogInformation("Syncing events for {Count} users with email", users.Count);
+            _logger.LogInformation("Syncing events for {Count} users (limited to 500 with email)", users.Count);
 
             var from = DateTime.UtcNow.AddDays(-7);
             var to = DateTime.UtcNow.AddDays(30);
