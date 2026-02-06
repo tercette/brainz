@@ -1,4 +1,5 @@
 using Brainz.Domain.Entities;
+using Brainz.Domain.Enums;
 using Brainz.Domain.Interfaces;
 using Brainz.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,24 @@ public class SyncLogRepository : ISyncLogRepository
             .OrderByDescending(s => s.StartedAt)
             .Take(count)
             .ToListAsync();
+
+    public async Task<bool> IsRunningAsync(SyncType syncType)
+        => await _context.SyncLogs
+            .AnyAsync(s => s.SyncType == syncType && s.Status == SyncStatus.Running);
+
+    public async Task MarkStaleAsFailedAsync()
+    {
+        var staleLogs = await _context.SyncLogs
+            .Where(s => s.Status == SyncStatus.Running)
+            .ToListAsync();
+
+        foreach (var log in staleLogs)
+        {
+            log.Status = SyncStatus.Failed;
+            log.CompletedAt = DateTime.UtcNow;
+            log.ErrorMessage = "Processo interrompido por reinicialização";
+        }
+    }
 
     public async Task AddAsync(SyncLog syncLog)
         => await _context.SyncLogs.AddAsync(syncLog);
