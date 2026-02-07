@@ -8,5 +8,6 @@ public record SyncLogDto(
     DateTime? CompletedAt,
     int RecordsProcessed,
     int RecordsFailed,
-    string? ErrorMessage
+    string? ErrorMessage,
+    string? Details
 );

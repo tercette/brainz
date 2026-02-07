@@ -45,6 +45,12 @@ public class SyncService : ISyncService
         {
             var graphUsers = await _graphService.GetAllUsersAsync();
             int processed = 0, failed = 0;
+            var total = graphUsers.Count;
+
+            _logger.LogInformation("Syncing {Total} users from Graph API", total);
+            syncLog.Details = $"0/{total}";
+            _unitOfWork.SyncLogs.Update(syncLog);
+            await _unitOfWork.SaveChangesAsync();
 
             foreach (var graphUser in graphUsers)
             {
@@ -88,6 +94,17 @@ public class SyncService : ISyncService
                     _logger.LogError(ex, "Failed to sync user {MicrosoftId}", graphUser.MicrosoftId);
                     failed++;
                 }
+
+                if (processed % 5000 == 0)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    syncLog.RecordsProcessed = processed;
+                    syncLog.RecordsFailed = failed;
+                    syncLog.Details = $"{processed}/{total}";
+                    _unitOfWork.SyncLogs.Update(syncLog);
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("User sync progress: {Current}/{Total}", processed, total);
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -96,6 +113,7 @@ public class SyncService : ISyncService
             syncLog.CompletedAt = DateTime.UtcNow;
             syncLog.RecordsProcessed = processed;
             syncLog.RecordsFailed = failed;
+            syncLog.Details = $"{processed}/{total}";
         }
         catch (Exception ex)
         {
@@ -133,15 +151,19 @@ public class SyncService : ISyncService
             var users = allUsers
                 .Where(u => !string.IsNullOrEmpty(u.Email))
                 .OrderByDescending(u => u.LastSyncedAt)
-                .Take(500)
+                .Take(50)
                 .ToList();
 
-            _logger.LogInformation("Syncing events for {Count} users (limited to 500 with email)", users.Count);
+            _logger.LogInformation("Syncing events for {Count} users (limited to 50 with email)", users.Count);
+
+            syncLog.Details = $"0/{users.Count} usuários";
+            _unitOfWork.SyncLogs.Update(syncLog);
+            await _unitOfWork.SaveChangesAsync();
 
             var from = DateTime.UtcNow.AddDays(-7);
             var to = DateTime.UtcNow.AddDays(30);
-            int processed = 0, failed = 0;
-            const int batchSize = 50;
+            int totalEvents = 0, failed = 0;
+            const int progressInterval = 5;
 
             for (int i = 0; i < users.Count; i++)
             {
@@ -175,7 +197,7 @@ public class SyncService : ISyncService
                     }).ToList();
 
                     await _unitOfWork.Events.AddRangeAsync(newEvents);
-                    processed += newEvents.Count;
+                    totalEvents += newEvents.Count;
                 }
                 catch (Exception ex)
                 {
@@ -183,14 +205,15 @@ public class SyncService : ISyncService
                     failed++;
                 }
 
-                if ((i + 1) % batchSize == 0)
+                if ((i + 1) % progressInterval == 0 || i == users.Count - 1)
                 {
                     await _unitOfWork.SaveChangesAsync();
-                    syncLog.RecordsProcessed = processed;
+                    syncLog.RecordsProcessed = i + 1 - failed;
                     syncLog.RecordsFailed = failed;
+                    syncLog.Details = $"{i + 1}/{users.Count} usuários ({totalEvents} eventos)";
                     _unitOfWork.SyncLogs.Update(syncLog);
                     await _unitOfWork.SaveChangesAsync();
-                    _logger.LogInformation("Event sync progress: {Current}/{Total} users", i + 1, users.Count);
+                    _logger.LogInformation("Event sync progress: {Current}/{Total} users, {Events} eventos", i + 1, users.Count, totalEvents);
                 }
             }
 
@@ -198,8 +221,9 @@ public class SyncService : ISyncService
 
             syncLog.Status = failed > 0 ? SyncStatus.CompletedWithErrors : SyncStatus.Completed;
             syncLog.CompletedAt = DateTime.UtcNow;
-            syncLog.RecordsProcessed = processed;
+            syncLog.RecordsProcessed = users.Count - failed;
             syncLog.RecordsFailed = failed;
+            syncLog.Details = $"{users.Count}/{users.Count} usuários ({totalEvents} eventos)";
         }
         catch (Exception ex)
         {
@@ -219,7 +243,7 @@ public class SyncService : ISyncService
         return logs.Select(l => new SyncLogDto(
             l.Id, l.SyncType.ToString(), l.Status.ToString(),
             l.StartedAt, l.CompletedAt, l.RecordsProcessed,
-            l.RecordsFailed, l.ErrorMessage));
+            l.RecordsFailed, l.ErrorMessage, l.Details));
     }
 
     public async Task TriggerManualSyncAsync(SyncType syncType)
