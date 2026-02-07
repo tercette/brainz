@@ -43,6 +43,10 @@ public class SyncService : ISyncService
 
         try
         {
+            syncLog.Details = "Buscando usuários do Graph...";
+            _unitOfWork.SyncLogs.Update(syncLog);
+            await _unitOfWork.SaveChangesAsync();
+
             var graphUsers = await _graphService.GetAllUsersAsync();
             int processed = 0, failed = 0;
             var total = graphUsers.Count;
@@ -95,7 +99,7 @@ public class SyncService : ISyncService
                     failed++;
                 }
 
-                if (processed % 5000 == 0)
+                if (processed % 1000 == 0)
                 {
                     await _unitOfWork.SaveChangesAsync();
                     syncLog.RecordsProcessed = processed;

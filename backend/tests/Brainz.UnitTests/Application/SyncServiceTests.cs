@@ -93,7 +93,7 @@ public class SyncServiceTests
 
         _unitOfWorkMock.Verify(
             u => u.SyncLogs.Update(It.Is<SyncLog>(s => s.Status == SyncStatus.Failed)),
-            Times.Once);
+            Times.AtLeastOnce);
     }
 
     [Fact]
