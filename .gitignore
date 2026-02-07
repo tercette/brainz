@@ -38,8 +38,5 @@ Desktop.ini
 # Secrets
 appsettings.Development.json
 
-# Notes
-CONTEXT.md
-
 # Docker
 sqlserver_data/
