@@ -13,6 +13,27 @@ interface DashboardStats {
   lastEventSync: SyncLog | null;
 }
 
+function parseProgress(details?: string): number | null {
+  if (!details) return null;
+  const match = details.match(/^(\d+)\/(\d+)/);
+  if (!match) return null;
+  const [, current, total] = match;
+  const t = parseInt(total);
+  if (t === 0) return 0;
+  return Math.round((parseInt(current) / t) * 100);
+}
+
+function ProgressBar({ percent }: { percent: number }) {
+  return (
+    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+      <div
+        className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
+        style={{ width: `${Math.min(percent, 100)}%` }}
+      />
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -29,9 +50,9 @@ export default function DashboardPage() {
         const logs = logsRes.data;
 
         const findLastSync = (type: string) => {
-          const completed = logs.find((l: SyncLog) => l.syncType === type && (l.status === 'Completed' || l.status === 'CompletedWithErrors'));
-          if (completed) return completed;
-          return logs.find((l: SyncLog) => l.syncType === type && l.status === 'Running') || null;
+          const running = logs.find((l: SyncLog) => l.syncType === type && l.status === 'Running');
+          if (running) return running;
+          return logs.find((l: SyncLog) => l.syncType === type && (l.status === 'Completed' || l.status === 'CompletedWithErrors')) || null;
         };
 
         const lastSync = logs.find((l: SyncLog) => l.status === 'Completed' || l.status === 'CompletedWithErrors')
@@ -50,6 +71,8 @@ export default function DashboardPage() {
       }
     }
     fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <Spinner />;
@@ -73,12 +96,25 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 mb-1">Sync de Usuários</p>
           {stats?.lastUserSync ? (
             stats.lastUserSync.status === 'Running' ? (
-              <>
-                <p className="text-lg font-semibold text-blue-600">Em andamento...</p>
-                <p className="text-xs text-gray-400">
-                  Iniciado em {formatDateTime(stats.lastUserSync.startedAt)}
-                </p>
-              </>
+              (() => {
+                const percent = parseProgress(stats.lastUserSync.details);
+                return (
+                  <>
+                    <p className="text-lg font-semibold text-blue-600">
+                      {stats.lastUserSync.details || 'Em andamento...'}
+                    </p>
+                    {percent !== null && (
+                      <>
+                        <ProgressBar percent={percent} />
+                        <p className="text-xs text-gray-500 mt-1">{percent}%</p>
+                      </>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      Iniciado {timeAgo(stats.lastUserSync.startedAt)}
+                    </p>
+                  </>
+                );
+              })()
             ) : (
               <>
                 <p className="text-lg font-semibold text-gray-800">
@@ -100,12 +136,25 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 mb-1">Sync de Eventos</p>
           {stats?.lastEventSync ? (
             stats.lastEventSync.status === 'Running' ? (
-              <>
-                <p className="text-lg font-semibold text-blue-600">Em andamento...</p>
-                <p className="text-xs text-gray-400">
-                  Iniciado em {formatDateTime(stats.lastEventSync.startedAt)}
-                </p>
-              </>
+              (() => {
+                const percent = parseProgress(stats.lastEventSync.details);
+                return (
+                  <>
+                    <p className="text-lg font-semibold text-blue-600">
+                      {stats.lastEventSync.details || 'Em andamento...'}
+                    </p>
+                    {percent !== null && (
+                      <>
+                        <ProgressBar percent={percent} />
+                        <p className="text-xs text-gray-500 mt-1">{percent}%</p>
+                      </>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      Iniciado {timeAgo(stats.lastEventSync.startedAt)}
+                    </p>
+                  </>
+                );
+              })()
             ) : (
               <>
                 <p className="text-lg font-semibold text-gray-800">

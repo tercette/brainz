@@ -17,4 +17,5 @@ export interface SyncLog {
   recordsProcessed: number;
   recordsFailed: number;
   errorMessage?: string;
+  details?: string;
 }
