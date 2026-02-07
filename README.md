@@ -65,6 +65,19 @@ O frontend estara disponivel em `http://localhost:5173`.
 - **Usuario:** admin
 - **Senha:** YOUR_ADMIN_PASSWORD
 
+### Fast Start up
+
+## BackEnd
+docker-compose up -d
+cd backend; dotnet run --project src/Brainz.Api
+
+## FrontEnd
+cd frontend; npm run dev
+
+## Login e Senha da aplicacao
+Login: admin
+Senha: Admin@123
+
 ## Como Rodar os Testes
 
 ```bash
